@@ -125,9 +125,15 @@ module.exports = class UserService extends BaseService {
     const { email, password } = userInfo;
     console.log(password);
     const user = await User.findOne({ email: email });
-    // const passwordIsValid = await user.isCheckPassword(password);
-    // if (!passwordIsValid) return;
+    const passwordIsValid = await user.isCheckPassword(password);
+    if (!passwordIsValid) return;
     return user;
+  }
+
+  async logout(refreshToken) {
+    if(!refreshToken) throw createError.BadRequest()
+    let delRefreshToken = await User.deleteOne({token: refreshToken})
+    return res.json({message: 'Logout!'})
   }
 
   async update(id, userInfo) {

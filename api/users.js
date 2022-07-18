@@ -121,6 +121,8 @@ module.exports = (router) => {
   );
 
   router.post('/logout', function(req, res) {
+    const {refreshToken} = req.body
+    await UserService.logout(refreshToken)
     res.cookie('jwt', '', { maxAge: 1 });
     res.status(200).json({ auth: false, token: null });
   });
@@ -129,7 +131,7 @@ module.exports = (router) => {
     try {
       console.log(req.payload)
       const type = req.payload.type;
-      if (type != 3) {
+      if (type == 1  || type == 0) {
         return res.status(400).json({msg: "Bạn không có quyền xem danh sách tài khoản"})
       }
       const user = await UserService.list(req.query);
