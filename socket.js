@@ -84,6 +84,10 @@ io.on('connection', async socket =>{
         io.to(customerId).emit('isTyping', typingUserId)
     })
 
+    socket.on('stopTyping', (customerId, typingUserId) => {
+        io.to(customerId).emit('isStopTyping', typingUserId)
+    })
+
     socket.on('readMessages', async (customerId)=>{
         const {id:readerId} = socket.user
         await MessageServices.readMessages(customerId, readerId)
