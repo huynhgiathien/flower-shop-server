@@ -120,7 +120,7 @@ module.exports = (router) => {
     }
   );
 
-  router.post('/logout', function(req, res) {
+  router.post('/logout', async function(req, res) {
     const {refreshToken} = req.body
     await UserService.logout(refreshToken)
     res.cookie('jwt', '', { maxAge: 1 });
