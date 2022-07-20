@@ -4,6 +4,7 @@ const createError = require("http-errors");
 const bcrypt = require("bcrypt");
 const BaseService = require("./base.service");
 const User = require("../models/user.model.js");
+const RefreshToken = require("../models/refreshToken.model.js");
 const _ = require("lodash")
 
 module.exports = class UserService extends BaseService {
@@ -132,7 +133,7 @@ module.exports = class UserService extends BaseService {
 
   async logout(refreshToken) {
     if(!refreshToken) throw createError.BadRequest()
-    await User.deleteOne({token: refreshToken})
+    await RefreshToken.deleteOne({token: refreshToken})
     return 'Logout!'
   }
 
