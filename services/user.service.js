@@ -132,8 +132,8 @@ module.exports = class UserService extends BaseService {
 
   async logout(refreshToken) {
     if(!refreshToken) throw createError.BadRequest()
-    let delRefreshToken = await User.deleteOne({token: refreshToken})
-    return res.json({message: 'Logout!'})
+    await User.deleteOne({token: refreshToken})
+    return 'Logout!'
   }
 
   async update(id, userInfo) {
