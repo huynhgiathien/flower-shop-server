@@ -91,14 +91,6 @@ module.exports = (router) => {
 
         const userId = result._id;
         const user = await UserService.get(userId);
-
-        // var token = jwt.sign(
-        //   { id: result._id, type: user.type },
-        //   process.env.ACCESS_TOKEN_SECRET,
-        //   {
-        //     expiresIn: 86400, // expires in 24 hours
-        //   }
-        // );
         const token = await authorize.signAccessToken(user._id, user.type)
         const refreshToken = await authorize.signRefreshToken(user._id)
 
