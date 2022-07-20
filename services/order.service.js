@@ -178,7 +178,6 @@ module.exports = class OrderService extends BaseService {
         result = total_order.filter((element) => {
           return moment(element.receive_date, 'DD/MM/YYYY').isBetween(from_date, to_date)
         })
-        console.log('this is result', result)
         break;
       case 'month':
         result = total_order.filter((element) => {

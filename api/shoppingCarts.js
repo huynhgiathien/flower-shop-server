@@ -7,9 +7,7 @@ module.exports = (router) => {
   router.get('/', authorize.verifyAccessToken, async (req,res)=>{
     try{
         const user_id = req.payload.id;
-        console.log('this is user', user_id)
         const shoppingCart = await ShoppingCartService.getShoppingCartByCusId(user_id);
-        console.log('shoppingCart', shoppingCart)
         const listShoppingCartDetail = await ShoppingCartService.getListShoppingCartDetailByShoppingCardId(shoppingCart?._id);
         if (shoppingCart && listShoppingCartDetail.length > 0)
         {
