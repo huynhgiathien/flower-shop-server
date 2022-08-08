@@ -13,6 +13,12 @@ const Product = require('../models/product.model.js')
 const Order = require('../models/order.model.js')
 const OrderDetail = require('../models/orderDetail.model.js')
 
+moment.lang('en', {
+  week: {
+      dow: 1 // Monday is the first day of the week.
+  }
+});
+
 module.exports = class OrderService extends BaseService {
   constructor(){
     super()
@@ -161,9 +167,7 @@ module.exports = class OrderService extends BaseService {
   async getTotal({option = 'day', selectedDate = moment()}) {
     const dateParams = moment(selectedDate, 'DD/MM/YYYY')
     const total_order = await Order.find({status:2})
-    // const today = moment();
     const from_date = moment(dateParams).startOf('week')
-    console.log('this is from_date', from_date)
     const to_date = moment(dateParams).endOf('week');
     let result;
     switch(option) {

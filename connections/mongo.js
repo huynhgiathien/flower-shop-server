@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+if (process.env.NODE_ENV !== 'production') require('dotenv').config()
 function newConnection(uri){
     const conn = mongoose.createConnection(uri, { 
         useNewUrlParser:true,
