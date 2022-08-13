@@ -138,7 +138,7 @@ module.exports = class OrderService extends BaseService {
           }
         }
         /////===Begin====Gửi email thông báo thành công=======///////
-        const text = 'Bạn vừa đặt mua sản phẩm tại cửa hàng Flower Sun \nMã đơn hàng: ' + json.data.order_code + 
+        const text = 'Bạn vừa đặt mua sản phẩm tại cửa hàng Flower Sun \nMã đơn hàng: ' + createOrder.data.order_code + 
         '\nPhí vận chuyển: ' + formatAmount(parseInt(shipFee)) + "\nTổng tiền: " + formatAmount(parseInt(total_fee ))
         const to = email
 
