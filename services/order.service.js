@@ -25,7 +25,6 @@ module.exports = class OrderService extends BaseService {
   }
   async create(OrderInfo) {
     try {
-      console.log('hello')
       //Begin == Create order//
       const {token, shopId, full_address, note, first_name, last_name, phone, address, to_district_id, to_ward_code, item, email, id_customer} = OrderInfo //id_customer đăng nhập thì truyền
       const to_district_id_param = parseInt(to_district_id)
@@ -60,7 +59,7 @@ module.exports = class OrderService extends BaseService {
           id_customer_main = "";
       }
 
-      await fetch("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",{
+      let createOrder = await fetch("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",{
         method:'post',
         headers: { 
             'Content-Type': 'application/json',
@@ -85,77 +84,71 @@ module.exports = class OrderService extends BaseService {
             "service_type_id":2,
             "payment_type_id":2,
             "items": products
-        }),
-            
+        }), 
       })
-      .then(res => res.json())
-      .then(async json => {
-        console.log('end2', json)
-        if (json.code == 400) {
-          throw new Error({is_completed: false, msg:json.code_message_value})
-        }
-        else if (json.code == 200) {
-          //Begin==Create Order//
-          const orderInfo = await Order.create({
-            order_code: json.data.order_code,
-            full_address: full_address,
-            customer_id: id_customer_main,
-            note:note,
-            first_name: first_name,
-            last_name: last_name,
-            phone: phone,
-            address: address,
-            email: email,
-            employee_id: "",
-            order_date: moment().utcOffset(420).format('DD/MM/YYYY HH:mm'),
-            ship_date: moment(json.data.expected_delivery_time).utcOffset(420).format('DD/MM/YYYY'),
-            ship_fee: shipFee,
-            product_fee: total_fee - shipFee,
-            total_fee: total_fee,
-            payed: false,
-            status: 0,
-            district_id: to_district_id,
-            ward_code: to_ward_code
+
+      createOrder = await createOrder.json()
+
+      if (createOrder.code == 400) {
+        return {is_completed: false, msg:createOrder.code_message_value}
+      }
+      else if (createOrder.code == 200) {
+        //Begin==Create Order//
+        const orderInfo = await Order.create({
+          order_code: createOrder.data.order_code,
+          full_address: full_address,
+          customer_id: id_customer_main,
+          note:note,
+          first_name: first_name,
+          last_name: last_name,
+          phone: phone,
+          address: address,
+          email: email,
+          employee_id: "",
+          order_date: moment().utcOffset(420).format('DD/MM/YYYY HH:mm'),
+          ship_date: moment(createOrder.data.expected_delivery_time).utcOffset(420).format('DD/MM/YYYY'),
+          ship_fee: shipFee,
+          product_fee: total_fee - shipFee,
+          total_fee: total_fee,
+          payed: false,
+          status: 0,
+          district_id: to_district_id,
+          ward_code: to_ward_code
+        })
+
+        //End==Create Order//
+
+        const order_id = orderInfo._id.toString()
+        //Begin==Create OrderDetail//
+        products.forEach(async product => {
+          await OrderDetail.create({
+            order_id: order_id,
+            product_id: product.id,
+            quantity:product.quantity,
+            name: product.name,
+            price: product.price,
+            imageList: product.imageList
           })
-
-          //End==Create Order//
-
-          const order_id = orderInfo._id.toString()
-          //Begin==Create OrderDetail//
-          products.forEach(async product => {
-            await OrderDetail.create({
-              order_id: order_id,
-              product_id: product.id,
-              quantity:product.quantity,
-              name: product.name,
-              price: product.price,
-              imageList: product.imageList
-            })
-          });
-          if (id_customer_main) {
-            const shoppingCartID = ( await ShoppingCartService.getShoppingCartByCusId(id_customer_main))?._id.toString()
-            if (shoppingCartID) {
-              ShoppingCartService.deleteShoppingCartByUserId({cus_id: id_customer_main})
-              ShoppingCartService.deleteShoppingCartDetailBySCId({shoppingCart_id: shoppingCartID})
-            }
+        });
+        if (id_customer_main) {
+          const shoppingCartID = ( await ShoppingCartService.getShoppingCartByCusId(id_customer_main))?._id.toString()
+          if (shoppingCartID) {
+            ShoppingCartService.deleteShoppingCartByUserId({cus_id: id_customer_main})
+            ShoppingCartService.deleteShoppingCartDetailBySCId({shoppingCart_id: shoppingCartID})
           }
-          /////===Begin====Gửi email thông báo thành công=======///////
-          const text = 'Bạn vừa đặt mua sản phẩm tại cửa hàng Flower Sun \nMã đơn hàng: ' + json.data.order_code + 
-          '\nPhí vận chuyển: ' + formatAmount(parseInt(shipFee)) + "\nTổng tiền: " + formatAmount(parseInt(total_fee ))
-          const to = email
-
-          await SendMailService.send({to, text})
-          /////===End====Gửi email thông báo thành công=======///////
-          
-          //End == Create order //
-        } else {
-          console.log('end')
-          throw new Error({is_completed: false, msg: "Giao dịch thất bại"})
         }
-      })
-      .catch(err => {
-        console.log('this is err', err.message)
-      })
+        /////===Begin====Gửi email thông báo thành công=======///////
+        const text = 'Bạn vừa đặt mua sản phẩm tại cửa hàng Flower Sun \nMã đơn hàng: ' + json.data.order_code + 
+        '\nPhí vận chuyển: ' + formatAmount(parseInt(shipFee)) + "\nTổng tiền: " + formatAmount(parseInt(total_fee ))
+        const to = email
+
+        await SendMailService.send({to, text})
+        /////===End====Gửi email thông báo thành công=======///////
+        
+        //End == Create order //
+      } else {
+        throw new Error({is_completed: false, msg: "Giao dịch thất bại"})
+      }
       return {is_completed: true, msg: "Giao dịch thành công"}
     }
     catch (err) {
