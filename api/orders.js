@@ -20,6 +20,7 @@ module.exports = (router) => {
       console.log("token vs shopId", Token, ShopId)
 			const result = await OrderService.create({...req.body, id_customer: user_id, token: Token, shopId: parseInt(ShopId)})
 			if (result.is_completed) {
+        console.log('helllo')
 				return res.status(200).json({msg:result.msg})
 			}
 			return res.status(400).json({msg:result.msg})
